@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 import shutil
 import time
+import plotly.express as px
+
 
 REPORT_PATH = 'reports/report.pdf'
 DETECTIONS_DIR = Path("detections")
@@ -40,37 +42,30 @@ if os.path.exists(REPORT_PATH):
 
 # ----- Центральная часть -----
 st.title("Пример интерфейса")
-st.write("Ниже таблица с данными:")
-
-# Пример данных (ты будешь их наполнять из детектора)
-data = {
-    "Имя": ["Иван", "Мария", "Петр"],
-    "Возраст": [25, 30, 22],
-    "Город": ["Москва", "СПб", "Казань"]
-}
-df = pd.DataFrame(data)
-st.dataframe(df)
 
 # ----- Последнее изображение из detections -----
-st.subheader("Последнее обнаружение")
-if DETECTIONS_DIR.exists() and any(DETECTIONS_DIR.iterdir()):
-    latest_file = max(DETECTIONS_DIR.glob("*.jpg"), key=os.path.getctime)
-    st.image(str(latest_file), caption=f"Последний кадр: {latest_file.name}")
-else:
-    st.info("Нет сохранённых изображений в папке detections")
+# st.subheader("Последнее обнаружение")
+# if DETECTIONS_DIR.exists() and any(DETECTIONS_DIR.iterdir()):
+#     latest_file = max(DETECTIONS_DIR.glob("*.jpg"), key=os.path.getctime)
+#     st.image(str(latest_file), caption=f"Последний кадр: {latest_file.name}")
+# else:
+#     st.info("Нет сохранённых изображений в папке detections")
 
 # ----- Информация по объектам -----
 st.subheader("Последние объекты")
 # Пример структуры (замени на реальную из детектора)
 objects_data = [
-    {"Класс": "person", "Confidence": 0.95, "ID": 1, "Время": "12:34:56"},
-    {"Класс": "dog", "Confidence": 0.87, "ID": 2, "Время": "12:34:58"},
+    {"Тип": "Man", "Confidence": 0.95, "ID": 1, "Время": "12:34:56"},
+    {"Тип": "Dog", "Confidence": 0.95, "ID": 1, "Время": "12:34:56"}
 ]
 objects_df = pd.DataFrame(objects_data)
 st.dataframe(objects_df)
 
 # ----- Количество объектов по классам -----
 st.subheader("Статистика по классам")
-class_counts = objects_df['Класс'].value_counts().reset_index()
-class_counts.columns = ['Класс', 'Количество']
-st.table(class_counts)
+class_counts = objects_df['Тип'].value_counts().reset_index()
+class_counts.columns = ['Тип', 'Количество']
+
+fig = px.bar(class_counts, x='Тип', y='Количество', color='Тип',
+             text='Тип', title="Количество объектов по классам")
+st.plotly_chart(fig, use_container_width=True)
