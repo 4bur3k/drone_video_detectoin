@@ -1,19 +1,23 @@
 data:
-  logfile_path: alerts.json
   report_path: reports/report.pdf
   video_path: video/video.mp4
-  res_images_dir: detections/
 
-model: 
+model_train: 
   name: yolo11n.pt
-  pretrained: True
+  path: src/models/yolo11n.pt
 
 inference:
-  name: yolo11n.onnx
+  export_format: ncnn
+  path: src/models/yolo11n.ncnn
+  tracker: bytetrack.yaml
+
   conf: 0.3
-  img_size: 320
   classes: ["person"]
+
+  img_size: 320
   camera_index: 0
   device: cpu
-  tracker: bytetrack.yaml
   stream: True 
+
+  log_path: alerts.json
+  res_img_dir: detections/

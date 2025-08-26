@@ -5,15 +5,19 @@ import requests
 import time
 import os
 import json
+import yaml
 
 # Настройки
-MODEL = "yolo11n.pt"
-CAM_INDEX = 0
-IMG_SIZE = 320
-CONF = 0.35
-CHECK_CLASSES = ["person"]   # интересующие классы
-LOGFILE_PATH = 'alerts.json'
-SAVE_DIR = 'detections'
+with open('config.yaml') as f:
+    cfg = yaml.safe_load(f)
+    
+MODEL = cfg['path']
+CAM_INDEX = cfg['camera_index']
+IMG_SIZE = cfg['img_size']
+CONF = cfg['conf']
+CHECK_CLASSES = cfg['classes']   
+LOGFILE_PATH = cfg['log_path']
+RES_DIR = cfg['res_img_dir']
 
 def log_alert(label, conf):
     entry = {'class': label, 'conf:': conf, 'time': time.time()}
