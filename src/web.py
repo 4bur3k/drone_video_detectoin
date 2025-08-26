@@ -5,7 +5,9 @@ from pathlib import Path
 import shutil
 import time
 import plotly.express as px
-
+'''
+TODO: слить конфиг, убрать комы, переписать ГПТшные ошибки
+'''
 
 REPORT_PATH = 'reports/report.pdf'
 DETECTIONS_DIR = Path("detections")
