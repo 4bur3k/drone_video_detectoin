@@ -12,6 +12,7 @@
 ```
 rpicam-vid -t 0 -n --vflip --codec libav --libav-format mpegts -o tcp://0.0.0.0:8888?listen=1
 ```
+Либо в `detection.py` указываем в парамеры модели `source=CAM_INDEX`
 
 5. Теперь можно запустить деткцию ```python3 src/detector.py```
 Запускается трекинг. Каждый уникальный объект в сцене сохраняется в `./detections/`. 
