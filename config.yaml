@@ -8,14 +8,15 @@ model_train:
 
 inference:
   export_format: ncnn
-  path: src/models/yolo11n.ncnn
+  path: src/models/yolo11n_ncnn_model
   tracker: bytetrack.yaml
 
   conf: 0.3
   classes: ["person"]
 
-  img_size: 320
+  img_size: 480
   camera_index: 0
+  video_url: "tcp://0.0.0.0:8888"
   device: cpu
   stream: True 
 

@@ -1,4 +1,3 @@
-# yolov11_event_detector.py
 from ultralytics import YOLO
 import cv2
 import requests
@@ -13,6 +12,7 @@ with open('config.yaml') as f:
     
 MODEL = cfg['path']
 CAM_INDEX = cfg['camera_index']
+VIDEO_URL = cfg['video_url']
 IMG_SIZE = cfg['img_size']
 CONF = cfg['conf']
 CHECK_CLASSES = cfg['classes']   
@@ -50,7 +50,7 @@ def detector():
     
     
     results = model.track(
-    source=CAM_INDEX,
+    source=VIDEO_URL,
     imgsz=IMG_SIZE,
     conf=CONF,
     classes=wanted_idxs,
@@ -75,7 +75,7 @@ def detector():
                     log_alert(label, conf)
 
                     ts = int(time.time())
-                    filename = os.path.join(SAVE_DIR, f"alert_{ts}.jpg")
+                    filename = os.path.join(RES_DIR, f"alert_{ts}.jpg")
                     cv2.imwrite(filename, frame)
                     print(f"[IMG] Сохранено: {filename}")
 
