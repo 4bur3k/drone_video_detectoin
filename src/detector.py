@@ -9,7 +9,7 @@ import yaml
 
 # Настройки
 with open('config.yaml') as f:
-    cfg = yaml.safe_load(f)
+    cfg = yaml.safe_load(f)['inference']
     
 MODEL = cfg['path']
 CAM_INDEX = cfg['camera_index']
