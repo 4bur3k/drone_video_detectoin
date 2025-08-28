@@ -1,35 +1,41 @@
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Image, Spacer
+from reportlab.lib.units import inch
 import os
+import yaml
 
-def create_pdf(filename="report.pdf"):
-    images = os.listdir(conf['res_images_dir'])
-    # Создаём PDF-документ
+# Настройки
+with open('config.yaml') as f:
+    cfg = yaml.safe_load(f)
+
+def create_pdf(filename="reports/report.pdf"):
+    img_dir = cfg['inference']['res_img_dir']
+    images = sorted(os.listdir(img_dir)) 
+    
+    if not images:
+        print("В папке detections нет изображений")
+        return
+    
     doc = SimpleDocTemplate(filename, pagesize=A4)
-
-    # Заготовка для элементов (текст, таблицы, картинки и т.д.)
     elements = []
 
-    # Используем стандартные стили
-    styles = getSampleStyleSheet()
+    max_width, max_height = A4  
 
-    # Заголовок
-    title = Paragraph("Project report", styles['Title'])
-    elements.append(title)
-    elements.append(Spacer(1, 20))  # отступ
+    for img_name in images:
+        img_path = os.path.join(img_dir, img_name)
 
-    # Текст абзаца
-    text = Paragraph(
-        "Just yet another paragraph"
-        "Some more text",
-        styles['Normal']
-    )
-    elements.append(text)
+        try:
+            im = Image(img_path)
+            # подгонкой под ширину страницы
+            im._restrictSize(max_width - inch, max_height - inch) 
+            elements.append(im)
+            elements.append(Spacer(1, 0.3 * inch))  
+        except Exception as e:
+            print(f"Ошибка при добавлении {img_path}: {e}")
 
     # Генерация PDF
     doc.build(elements)
-    print(f"PDF файл '{filename}' успешно создан!")
+    print(f"'{filename}' создан!")
 
 if __name__ == "__main__":
     create_pdf()

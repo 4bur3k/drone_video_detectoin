@@ -5,6 +5,14 @@ import time
 import os
 import json
 import yaml
+import logging
+import traceback
+
+logging.basicConfig(
+    filename='logs/detectorlog.log', 
+    level=logging.INFO,      
+    format='%(asctime)s [%(levelname)s] %(message)s',
+)
 
 # Настройки
 with open('config.yaml') as f:
@@ -19,6 +27,13 @@ CHECK_CLASSES = cfg['classes']
 LOGFILE_PATH = cfg['log_path']
 RES_DIR = cfg['res_img_dir']
 
+def get_runnnig_state(self):
+    with open('runtime.yaml') as f:
+        runtime_flag = yaml.safe_load(f)['detector']['running']
+        
+    return runtime_flag
+
+# DEPRECATED
 def log_alert(label, conf):
     entry = {'class': label, 'conf:': conf, 'time': time.time()}
     
@@ -41,23 +56,35 @@ def log_alert(label, conf):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def detector():
-            
-    model = YOLO(MODEL)
-    names = model.names
+    
+    try:
+        model = YOLO(MODEL)
+        names = model.names
+        logging.info(f'Model loaded: {model} for {list(names.values())}')
+    except Exception as e:
+        logging.error(f'Failed to load model: {e}\n{traceback.format_exc()}')
+        return
 
     # получаем id нужных классов
     wanted_idxs = [k for k, v in names.items() if v in CHECK_CLASSES]
     
+    try:
+        results = model.track(
+        source=CAM_INDEX,
+        imgsz=IMG_SIZE,
+        conf=CONF,
+        classes=wanted_idxs,
+        device="cpu",
+        tracker="bytetrack.yaml",
+        stream=True  
+            )
+    except Exception as e:
+        logging.error(f'Failed to start tracking: {e}\n{traceback.format_exc()}')
+        return
     
-    results = model.track(
-    source=VIDEO_URL,
-    imgsz=IMG_SIZE,
-    conf=CONF,
-    classes=wanted_idxs,
-    device="cpu",
-    tracker="bytetrack.yaml",
-    stream=True  
-        )
+    #time for check runtime flags
+    last_check = 0
+    check_interval = 1.0
 
     seen_ids = set()
     for r in results:
@@ -71,13 +98,22 @@ def detector():
 
                 if track_id not in seen_ids:
                     seen_ids.add(track_id)
-                    print(f"[ALERT] Обнаружен {label} ({conf:.2f})")
-                    log_alert(label, conf)
+                    # print(f"[ALERT] Обнаружен {label} ({conf:.2f})")
+
+                    logging.info(f'Detected: {label}, {conf}')
 
                     ts = int(time.time())
                     filename = os.path.join(RES_DIR, f"alert_{ts}.jpg")
                     cv2.imwrite(filename, frame)
-                    print(f"[IMG] Сохранено: {filename}")
-
+        
+        # Check if loop shall stop to stop
+        now = time.time()
+        if now - last_check > check_interval:
+            # If running state == False -> stop
+            if not get_runnnig_state():
+                logging.info('Process stopped from UI')
+                print('Stopped from UI')
+                break
+            
 if __name__ == "__main__":
     detector()

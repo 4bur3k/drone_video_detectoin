@@ -1,0 +1,3 @@
+detector:
+  fps: 5
+  running: true
